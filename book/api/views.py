@@ -9,7 +9,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from book.api.serializer import BookParkingSerializer, UpdateBookingSerializer
+from book.api.serializer import BookParkingSerializer, UpdateBookingSerializer,RatingSerialzier
 from book.api.services import BookParkingServices
 from company.models import Company
 from parking.models import (AreaMembership, BookingStatus,BookParking,
@@ -106,3 +106,39 @@ def khalti_callback(request):
     return Response({
         "message":"Transaction completed"
     })
+
+
+
+class BookingRatingView(GenericAPIView):
+
+    @transaction.atomic
+    def post(self,request, *args, **kwargs):
+        data= request.data
+        serialzier = RatingSerialzier(data=data)
+        if serialzier.is_valid():
+            booking = BookParking.objects.get(id=data['booking'])
+            if booking.status != BookingStatus.COMPLETED:
+                return Response({
+                    "message":"Booking is not compeleted yet"
+                },status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            rating = Rating.objects.filter(
+                booking= data['booking']
+            )
+            if rating:
+                return Response({
+                    "message":"Rating is already provided"
+                },status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            book_rating = serialzier.save()
+            book_rating.user = request.user
+            book_rating.save()
+            company_area_rating = booking.area
+            if company_area_rating.rating == 0:
+                company_area_rating.rating = data['rating']
+            else:
+                company_area_rating.rating = (company_area_rating.rating + data['rating'])/2
+            company_area_rating.save()
+            return Response({
+                "message":"Rating Completed"
+            },status=status.HTTP_200_OK)
+        return Response(serialzier.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)

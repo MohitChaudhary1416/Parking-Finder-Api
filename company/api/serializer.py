@@ -11,7 +11,8 @@ class CompanySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
 
         data =  super().to_representation(instance)
-        data['time']=str(datetime.now())  
+        data['time']=str(datetime.now())
+        data['owner']=instance.owner.username  
         return data
 
 

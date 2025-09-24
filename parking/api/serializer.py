@@ -10,6 +10,9 @@ class CompanyAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyArea
         fields = '__all__'
+    def to_representation(self, instance):
+        data =  super().to_representation(instance)
+        return data
 
 
 class CompanyAreaMemebershipSerializer(serializers.ModelSerializer):

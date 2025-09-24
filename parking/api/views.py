@@ -7,9 +7,14 @@ from rest_framework.permissions import IsAuthenticated
 from company.models import Company
 from parking.api.services import IscompanyOwner,APIServices,IsparkingMember,IsSuperAdmin
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 
 class CompanyAreaView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={201: CompanyAreaSerializer},
+    )
 
     def get(self,request,*args,**kwargs):
         data = CompanyArea.objects.all()
@@ -21,6 +26,12 @@ class CompanyAreaView(GenericAPIView):
 
 class CompanyAreaPostView(GenericAPIView):
     permission_classes = [IsAuthenticated,IscompanyOwner]
+
+
+    @extend_schema(
+        request=CompanyAreaSerializer,
+        responses={201: CompanyAreaSerializer},
+    )
 
     def post(self,request,*args,**kwargs):
         data = request.data

@@ -4,6 +4,7 @@ from parking.models import BookParking,CompanyArea, ParkingRatePlan, Vechile, Bo
 from rest_framework.exceptions import ValidationError
 
 from promocode.models import Promocode
+from rating.models import Rating
 
 
 class BookParkingSerializer(serializers.ModelSerializer):
@@ -25,8 +26,7 @@ class BookParkingSerializer(serializers.ModelSerializer):
         model = BookParking
         fields = '__all__'
 
-    # def validate(self, attrs):
-    #     return super().validate(attrs)
+    
     def validate_area(self, area):
         vechile = self.initial_data.get('vechile') 
 
@@ -42,22 +42,6 @@ class BookParkingSerializer(serializers.ModelSerializer):
             raise ValidationError("There is no space left for parking")
 
         return area
-
-
-
-    # def validate_area(self, area):
-    #     vechile = self.initial_data.get('vechile')
-    #     data = ParkingRatePlan.objects.filter(
-    #         area =area,
-    #         vechile_id = vechile
-    #     )
-
-        # if data.first().remaining_space == 0:
-        #     raise ValidationError("There is no space left for parking")
-
-        # if data:
-        #     return area
-        # raise ValidationError("You cannot book this vechile in this area")
 
     def validate_promocode(self, promocode):
         data = Promocode.objects.filter(
@@ -87,3 +71,10 @@ class UpdateBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookParking
         fields = ['status','payment_type']
+
+
+class RatingSerialzier(serializers.ModelSerializer):
+    booking = serializers.PrimaryKeyRelatedField(queryset = BookParking.objects.all())
+    class Meta:
+        model = Rating
+        fields = ['booking','rating','message']
